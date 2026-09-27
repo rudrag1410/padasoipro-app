@@ -1,4 +1,4 @@
-# PadosiPro: onboarding app + API
+# PadosiPro App + API
 
 A native mobile app (Expo / React Native) and its own backend (Node.js + Express), in a Turborepo monorepo.
 It covers the first customer journey: **register → verify email with an OTP → log in → first-login profile → pick tasks → home**.
