@@ -26,7 +26,7 @@ padosipro/
 ## Quick start (about 5 minutes)
 
 ```bash
-git clone <repo> padosipro && cd padosipro
+git clone <repo> padasoipro-app && cd padasoipro-app
 pnpm install
 ```
 
