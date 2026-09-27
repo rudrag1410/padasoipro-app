@@ -178,6 +178,3 @@ Base URL `http://localhost:4000/api/v1`. All errors look like
 | `pnpm run db:seed` | re-seed the task catalogue (also runs on every API start) |
 | `pnpm run build` | build the API (`packages/api/dist`) |
 | `docker compose down -v` | stop and wipe the Docker database |
-# padasoipro-app
-# padasoipro-app
-# padasoipro-app
