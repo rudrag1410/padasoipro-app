@@ -55,14 +55,3 @@ rather than the client guessing from local state).
   `.github/workflows` was added since the brief doesn't ask for it).
 - **iOS build not attempted** — Android APK only, per the brief's explicit allowance ("Android alone is completely
   fine").
-
-## What's next (with another week)
-
-1. Refresh tokens + server-side revocation (logout that actually invalidates the token, not just forgets it locally).
-2. Move rate limiting to a shared store (Redis) so it holds under multiple API instances.
-3. Add an admin/ops view of the task catalogue instead of a static seed file, so categories/tasks can change without
-   a deploy.
-4. E2E tests on the mobile app (Detox/Maestro) covering the full register → verify → profile → tasks → home path,
-   complementing the current API-level integration tests.
-5. Swap SQLite for Postgres behind the same repository interfaces (already abstracted, so this should be a
-   low-risk, contained change) once the product needs real concurrent write throughput.
