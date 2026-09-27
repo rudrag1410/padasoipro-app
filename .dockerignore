@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+**/.turbo
+**/.expo
+**/data
+**/.env
+**/*.db*
+packages/mobile/assets

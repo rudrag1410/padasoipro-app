@@ -1,0 +1,41 @@
+# One command: docker compose up --build
+#   API:            http://localhost:4000/api/v1/health
+#   Mailpit (inbox): http://localhost:8025
+services:
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_PATH: /app/data/padosipro.db
+      # Development-only defaults. Override in a real deployment.
+      JWT_SECRET: ${JWT_SECRET:-dev-only-jwt-secret-change-me-0123456789abcdef}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:-dev-only-otp-secret-change-me-0123456789abcdef}
+      JWT_EXPIRES_IN_SECONDS: 604800
+      BCRYPT_COST: 12
+      AUTH_RATE_LIMIT_MAX: 50
+      CORS_ORIGINS: http://localhost:8081
+      MAIL_DRIVER: smtp
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      MAIL_FROM: "PadosiPro <no-reply@padosipro.test>"
+    volumes:
+      - api-data:/app/data
+    depends_on:
+      - mailpit
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025" # web inbox
+      - "1025:1025" # SMTP
+    restart: unless-stopped
+
+volumes:
+  api-data:

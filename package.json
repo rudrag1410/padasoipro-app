@@ -1,0 +1,23 @@
+{
+  "name": "padosipro",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PadosiPro onboarding: Expo mobile app + Express API in a Turborepo monorepo",
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:api": "turbo run dev --filter=@padosipro/api",
+    "dev:mobile": "turbo run dev --filter=@padosipro/mobile",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "db:seed": "pnpm run seed --filter=@padosipro/api"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.4",
+    "typescript": "~6.0.3"
+  }
+}
