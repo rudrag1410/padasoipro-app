@@ -1,39 +1,60 @@
-import { ERROR_CODES, OTP_RULES, type OtpChallenge } from '@padosipro/shared';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
-import { BrandHeader } from '@/components/brand';
-import { InlineAlert } from '@/components/feedback';
-import { AppText, Button, OtpInput, Screen, ScreenHeader } from '@/components/ui';
-import { OTP_BYPASS_CODE, ROUTES } from '@/constants';
-import { formatCountdown, getErrorMessage, maskEmail } from '@/helpers';
-import { useCountdown, useResendOtp, useVerifyOtp } from '@/hooks';
-import { ApiError } from '@/services/api';
-import { colors, spacing } from '@/theme';
-import type { VerifyParams } from '@/types';
+import { ERROR_CODES, OTP_RULES, type OtpChallenge } from "@padosipro/shared";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRef, useState } from "react";
+import { Pressable, StyleSheet, View, type TextInput } from "react-native";
+import { BrandHeader } from "@/components/brand";
+import { InlineAlert } from "@/components/feedback";
+import {
+  AppText,
+  Button,
+  OtpInput,
+  Screen,
+  ScreenHeader,
+} from "@/components/ui";
+import { OTP_BYPASS_CODE, ROUTES } from "@/constants";
+import { formatCountdown, getErrorMessage, maskEmail } from "@/helpers";
+import { useCountdown, useResendOtp, useVerifyOtp } from "@/hooks";
+import { ApiError } from "@/services/api";
+import { colors, spacing } from "@/theme";
+import type { VerifyParams } from "@/types";
 
-type Feedback = { tone: 'error' | 'success' | 'warning'; message: string } | null;
+type Feedback = {
+  tone: "error" | "success" | "warning";
+  message: string;
+} | null;
 
 /** Codes that mean the current code can't succeed any more; only a resend helps. */
-const DEAD_CODE_ERRORS: string[] = [ERROR_CODES.OTP_EXPIRED, ERROR_CODES.OTP_ATTEMPTS_EXCEEDED, ERROR_CODES.OTP_NOT_FOUND];
+const DEAD_CODE_ERRORS: string[] = [
+  ERROR_CODES.OTP_EXPIRED,
+  ERROR_CODES.OTP_ATTEMPTS_EXCEEDED,
+  ERROR_CODES.OTP_NOT_FOUND,
+];
 
 export function VerifyScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<VerifyParams>();
-  const email = params.email ?? '';
+  const email = params.email ?? "";
 
   const verify = useVerifyOtp();
   const resend = useResendOtp();
   const inputRef = useRef<TextInput>(null);
 
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [codeIsDead, setCodeIsDead] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(
-    params.from === 'login' ? { tone: 'warning', message: 'Your email is not verified yet. Enter the code we sent you.' } : null,
+    params.from === "login"
+      ? {
+          tone: "warning",
+          message:
+            "Your email is not verified yet. Enter the code we sent you.",
+        }
+      : null,
   );
-  const [challenge, setChallenge] = useState<Pick<OtpChallenge, 'expiresAt' | 'resendAvailableAt'>>({
-    expiresAt: params.expiresAt ?? '',
-    resendAvailableAt: params.resendAvailableAt ?? '',
+  const [challenge, setChallenge] = useState<
+    Pick<OtpChallenge, "expiresAt" | "resendAvailableAt">
+  >({
+    expiresAt: params.expiresAt ?? "",
+    resendAvailableAt: params.resendAvailableAt ?? "",
   });
 
   const resendIn = useCountdown(challenge.resendAvailableAt);
@@ -48,13 +69,17 @@ export function VerifyScreen() {
       await verify.mutateAsync({ email, code: value });
       // Signed in: the auth guard takes over.
     } catch (error) {
-      setCode('');
-      if (error instanceof ApiError && error.code === ERROR_CODES.EMAIL_ALREADY_VERIFIED) {
+      setCode("");
+      if (
+        error instanceof ApiError &&
+        error.code === ERROR_CODES.EMAIL_ALREADY_VERIFIED
+      ) {
         router.replace(ROUTES.LOGIN);
         return;
       }
-      if (error instanceof ApiError && DEAD_CODE_ERRORS.includes(error.code)) setCodeIsDead(true);
-      setFeedback({ tone: 'error', message: getErrorMessage(error) });
+      if (error instanceof ApiError && DEAD_CODE_ERRORS.includes(error.code))
+        setCodeIsDead(true);
+      setFeedback({ tone: "error", message: getErrorMessage(error) });
       inputRef.current?.focus();
     }
   };
@@ -64,17 +89,23 @@ export function VerifyScreen() {
     try {
       const { otp } = await resend.mutateAsync(email);
       setChallenge(otp);
-      setCode('');
+      setCode("");
       setCodeIsDead(false);
-      setFeedback({ tone: 'success', message: `A new code is on its way to ${maskEmail(email)}.` });
+      setFeedback({
+        tone: "success",
+        message: `A new code is on its way to ${maskEmail(email)}.`,
+      });
       inputRef.current?.focus();
     } catch (error) {
       // Cooldown: the server tells us the real timing, so sync the countdown to it.
-      if (error instanceof ApiError && error.code === ERROR_CODES.OTP_RESEND_COOLDOWN) {
+      if (
+        error instanceof ApiError &&
+        error.code === ERROR_CODES.OTP_RESEND_COOLDOWN
+      ) {
         const otp = error.meta.otp as OtpChallenge | undefined;
         if (otp) setChallenge(otp);
       }
-      setFeedback({ tone: 'error', message: getErrorMessage(error) });
+      setFeedback({ tone: "error", message: getErrorMessage(error) });
     }
   };
 
@@ -82,17 +113,34 @@ export function VerifyScreen() {
     // Opened without context (e.g. a stale deep link): nothing to verify.
     return (
       <Screen>
-        <BrandHeader title="Verify your email" subtitle="We couldn't tell which email to verify. Please log in again." />
-        <Button title="Go to log in" onPress={() => router.replace(ROUTES.LOGIN)} />
+        <BrandHeader
+          title="Verify your email"
+          subtitle="We couldn't tell which email to verify. Please log in again."
+        />
+        <Button
+          title="Go to log in"
+          onPress={() => router.replace(ROUTES.LOGIN)}
+        />
       </Screen>
     );
   }
 
   return (
     <Screen
-      header={<ScreenHeader onBack={() => (router.canGoBack() ? router.back() : router.replace(ROUTES.LOGIN))} />}
+      header={
+        <ScreenHeader
+          onBack={() =>
+            router.canGoBack() ? router.back() : router.replace(ROUTES.LOGIN)
+          }
+        />
+      }
       footer={
-        <Button title="Verify email" onPress={() => submit()} loading={verify.isPending} disabled={!canSubmit} />
+        <Button
+          title="Verify email"
+          onPress={() => submit()}
+          loading={verify.isPending}
+          disabled={!canSubmit}
+        />
       }
     >
       <BrandHeader
@@ -107,15 +155,22 @@ export function VerifyScreen() {
           value={code}
           onChange={(value) => {
             setCode(value);
-            if (feedback?.tone === 'error' && !codeIsDead) setFeedback(null);
+            if (feedback?.tone === "error" && !codeIsDead) setFeedback(null);
           }}
           onComplete={(value) => void submit(value)}
-          hasError={feedback?.tone === 'error'}
+          hasError={feedback?.tone === "error"}
           disabled={verify.isPending || codeIsDead || expired}
         />
 
-        {feedback && <InlineAlert tone={feedback.tone} message={feedback.message} />}
-        {!feedback && expired && <InlineAlert tone="error" message="This code has expired. Request a new one below." />}
+        {feedback && (
+          <InlineAlert tone={feedback.tone} message={feedback.message} />
+        )}
+        {!feedback && expired && (
+          <InlineAlert
+            tone="error"
+            message="This code has expired. Request a new one below."
+          />
+        )}
 
         {challenge.expiresAt && !expired && !codeIsDead && (
           <AppText variant="small" color="textMuted" align="center">
@@ -128,25 +183,35 @@ export function VerifyScreen() {
             Didn't get the code?
           </AppText>
           {resendIn > 0 ? (
-            <AppText variant="smallStrong" color="textSubtle" accessibilityLiveRegion="polite">
+            <AppText
+              variant="smallStrong"
+              color="textSubtle"
+              accessibilityLiveRegion="polite"
+            >
               Resend in {formatCountdown(resendIn)}
             </AppText>
           ) : (
-            <Pressable onPress={onResend} disabled={resend.isPending} hitSlop={8} accessibilityRole="button">
+            <Pressable
+              onPress={onResend}
+              disabled={resend.isPending}
+              hitSlop={8}
+              accessibilityRole="button"
+            >
               <AppText variant="smallStrong" style={styles.link}>
-                {resend.isPending ? 'Sending…' : 'Resend code'}
+                {resend.isPending ? "Sending…" : "Resend code"}
               </AppText>
             </Pressable>
           )}
         </View>
 
         <AppText variant="caption" color="textSubtle" align="center">
-          Check your spam folder too. Codes are valid for {OTP_RULES.TTL_SECONDS / 60} minutes.
+          Check your spam folder too. Codes are valid for{" "}
+          {OTP_RULES.TTL_SECONDS / 60} minutes.
         </AppText>
 
         {OTP_BYPASS_CODE && (
           <Button
-            title="Skip verification (review build)"
+            title="Skip verification"
             variant="ghost"
             onPress={() => void submit(OTP_BYPASS_CODE)}
             loading={verify.isPending}
@@ -159,6 +224,12 @@ export function VerifyScreen() {
 
 const styles = StyleSheet.create({
   body: { gap: spacing.xl },
-  resendRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: spacing.xs, flexWrap: 'wrap' },
+  resendRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.xs,
+    flexWrap: "wrap",
+  },
   link: { color: colors.primary },
 });
