@@ -51,6 +51,13 @@
     "backgroundColor": "#FAFAF7",
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "251ec81d-56d2-4dd0-8fcc-e48da97f0e34"
+      }
+    },
+    "owner": "rudrag.dev"
   }
 }
