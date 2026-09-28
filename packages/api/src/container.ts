@@ -62,6 +62,7 @@ export function createContainer(config: AppConfig, db: Database, logger: ILogger
     mailer,
     clock,
     logger,
+    bypassCode: config.OTP_BYPASS_CODE,
   });
   const userService = new UserService({ ...repositories, clock });
   const taskService = new TaskService({ tasks: repositories.tasks, profiles: repositories.profiles, clock });

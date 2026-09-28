@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
 import { BrandHeader } from '@/components/brand';
 import { InlineAlert } from '@/components/feedback';
 import { AppText, Button, OtpInput, Screen, ScreenHeader } from '@/components/ui';
-import { ROUTES } from '@/constants';
+import { OTP_BYPASS_CODE, ROUTES } from '@/constants';
 import { formatCountdown, getErrorMessage, maskEmail } from '@/helpers';
 import { useCountdown, useResendOtp, useVerifyOtp } from '@/hooks';
 import { ApiError } from '@/services/api';
@@ -143,6 +143,15 @@ export function VerifyScreen() {
         <AppText variant="caption" color="textSubtle" align="center">
           Check your spam folder too. Codes are valid for {OTP_RULES.TTL_SECONDS / 60} minutes.
         </AppText>
+
+        {OTP_BYPASS_CODE && (
+          <Button
+            title="Skip verification (review build)"
+            variant="ghost"
+            onPress={() => void submit(OTP_BYPASS_CODE)}
+            loading={verify.isPending}
+          />
+        )}
       </View>
     </Screen>
   );

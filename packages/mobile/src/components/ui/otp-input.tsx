@@ -1,6 +1,6 @@
 import { OTP_RULES } from '@padosipro/shared';
 import { forwardRef, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View, type LayoutChangeEvent } from 'react-native';
 import { colors, radius, sizes, spacing, typography } from '@/theme';
 import { AppText } from './app-text';
 
@@ -22,6 +22,7 @@ export const OtpInput = forwardRef<TextInput, OtpInputProps>(function OtpInput(
   ref,
 ) {
   const [focused, setFocused] = useState(true);
+  const [boxLayout, setBoxLayout] = useState<{ width: number; height: number } | null>(null);
   const digits = value.split('');
 
   const handleChange = (text: string) => {
@@ -30,9 +31,14 @@ export const OtpInput = forwardRef<TextInput, OtpInputProps>(function OtpInput(
     if (next.length === length) onComplete?.(next);
   };
 
+  const onRowLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setBoxLayout({ width, height });
+  };
+
   return (
     <Pressable onPress={() => (ref as React.RefObject<TextInput | null>)?.current?.focus()} accessible={false}>
-      <View style={styles.row} pointerEvents="none">
+      <View style={styles.row} onLayout={onRowLayout} pointerEvents="none">
         {Array.from({ length }, (_, index) => {
           const isActive = focused && index === Math.min(value.length, length - 1);
           const borderColor = hasError ? colors.danger : isActive ? colors.primary : digits[index] ? colors.text : colors.border;
@@ -43,6 +49,9 @@ export const OtpInput = forwardRef<TextInput, OtpInputProps>(function OtpInput(
           );
         })}
       </View>
+      {/* Sized explicitly from the row's measured layout, not percentages: an absolutely
+          positioned 100%-height input can otherwise resolve against the wrong ancestor
+          (e.g. a centered scroll container) and cover unrelated content below it. */}
       <TextInput
         ref={ref}
         value={value}
@@ -58,7 +67,7 @@ export const OtpInput = forwardRef<TextInput, OtpInputProps>(function OtpInput(
         autoFocus
         caretHidden
         accessibilityLabel={`${length}-digit verification code`}
-        style={styles.hiddenInput}
+        style={[styles.hiddenInput, boxLayout && { width: boxLayout.width, height: boxLayout.height }]}
       />
     </Pressable>
   );
@@ -78,5 +87,5 @@ const styles = StyleSheet.create({
   },
   digit: { ...typography.title, color: colors.text },
   disabled: { opacity: 0.5 },
-  hiddenInput: { position: 'absolute', width: '100%', height: '100%', opacity: 0.011, color: 'transparent' },
+  hiddenInput: { position: 'absolute', top: 0, left: 0, opacity: 0.011, color: 'transparent' },
 });

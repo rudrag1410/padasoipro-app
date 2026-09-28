@@ -28,3 +28,6 @@ function resolveApiOrigin(): string {
 export const API_BASE_URL = `${resolveApiOrigin()}${API_PREFIX}`;
 
 export const REQUEST_TIMEOUT_MS = 15_000;
+
+/** Dev/review only: shows a "Skip verification" button when set. Must match OTP_BYPASS_CODE on the API. */
+export const OTP_BYPASS_CODE = process.env.EXPO_PUBLIC_OTP_BYPASS_CODE || undefined;

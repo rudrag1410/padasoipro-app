@@ -25,6 +25,11 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional().transform((value) => value || undefined),
   SMTP_PASS: z.string().optional().transform((value) => value || undefined),
   MAIL_FROM: z.string().default('PadosiPro <no-reply@padosipro.test>'),
+  /** Dev/review only: when set, this code always verifies, bypassing the real OTP check. Leave unset in production. */
+  OTP_BYPASS_CODE: z
+    .string()
+    .optional()
+    .transform((value) => value || undefined),
 });
 
 export type AppConfig = z.output<typeof envSchema>;

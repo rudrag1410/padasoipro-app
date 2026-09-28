@@ -25,6 +25,7 @@ export function Screen({
 }: ScreenProps) {
   const body = scroll ? (
     <ScrollView
+      style={styles.fill}
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}

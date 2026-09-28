@@ -31,6 +31,8 @@ export interface OtpServiceDeps {
   clock: IClock;
   logger: ILogger;
   rules?: OtpRules;
+  /** Dev/review only: when set, this code always verifies. Leave undefined in production. */
+  bypassCode?: string;
 }
 
 export class OtpService implements IOtpService {
@@ -97,6 +99,13 @@ export class OtpService implements IOtpService {
   }
 
   async verify(userId: string, code: string): Promise<void> {
+    if (this.deps.bypassCode && code === this.deps.bypassCode) {
+      this.deps.logger.warn({ userId }, 'OTP bypass code used — dev/review shortcut, not a real verification');
+      const active = await this.deps.otps.findLatestForUser(userId);
+      if (active && !active.consumedAt) await this.deps.otps.consume(active.id, this.deps.clock.now());
+      return;
+    }
+
     const now = this.deps.clock.now();
     const otp = await this.deps.otps.findLatestForUser(userId);
 
